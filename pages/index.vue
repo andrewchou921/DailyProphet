@@ -103,7 +103,9 @@ useHead({
     </main>
 
     <footer>Copyright © Andrew Portfolio Website 2025</footer>
-    <button @click="scrollToTop" class="back-to-top">↑</button>
+    <button @click="scrollToTop" class="back-to-top">
+      <img src="/back-to-top-golden-snitch.png" alt="回頂部" class="snitch-icon" />
+    </button>
   </div>
 </template>
 
@@ -188,12 +190,6 @@ body {
   cursor: pointer;
 }
 
-/* 主區域 */
-main {
-  max-width: 1200px;
-  margin: auto;
-  padding: 6rem 1rem 2rem;
-}
 
 .title {
   font-size: 2.5rem;
@@ -211,11 +207,11 @@ main {
   gap: 2rem;
   background: #d7b892;
   padding: 1.5rem;
-  border-radius: 16px;
+  border-radius: 0px;
   margin-bottom: 3rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   position: relative;
-  border: 3px solid #3e1f0d;
+  /* border: 3px solid #3e1f0d; */
   color: #3e1f0d;
 }
 
@@ -267,8 +263,8 @@ main {
 .card {
   background: #d7b892;
   padding: 1.5rem;
-  border-radius: 16px;
-  border: 3px solid #3e1f0d;
+  border-radius: 0px;
+  /* border: 3px solid #3e1f0d; */
   color: #3e1f0d;
   display: flex;
   flex-direction: column;
@@ -408,19 +404,39 @@ footer {
   border-top: 1px solid #3e1f0d;
 }
 
+/* 回到頂部按鈕 */
 .back-to-top {
   position: fixed;
-  bottom: 1.2rem;
-  right: 1.2rem;
-  background: #3e1f0d;
-  color: white;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  font-size: 1rem;
+  bottom: 0rem;
+  right: 0rem; 
+  background: transparent;
   border: none;
   cursor: pointer;
+  z-index: 1000;
 }
+
+.back-to-top img.snitch-icon {
+  width: 160px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.back-to-top:hover img.snitch-icon {
+  transform: scale(1.1) rotate(10deg);
+}
+@media (max-width: 600px) {
+  .back-to-top {
+    right: 0rem;
+    bottom: 0%;
+    width: 100px;
+  }
+  .back-to-top img.snitch-icon {
+  width: 120px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+}
+
 
 /* 響應式設計 */
 @media (max-width: 1024px) {
@@ -496,6 +512,16 @@ footer {
 }
 
 /* 超連結移除 */
+.card {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+.card:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+}
+
+
 .card a,
 .latest-post a,
 .latest-post h2 a,
@@ -606,7 +632,7 @@ footer {
   opacity: 0.4; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
-   animation: noiseMove 6s infinite linear;
+    animation: noiseMove 25s linear infinite;
 }
 
 .paper-banner {
@@ -648,11 +674,8 @@ footer {
   0% {
     background-position: 0 0;
   }
-  50% {
-    background-position: 10px 10px;
-  }
   100% {
-    background-position: 0 0;
+    background-position: 100px 100px;
   }
 }
 
