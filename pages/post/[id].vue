@@ -1,0 +1,141 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { supabase } from '~/utils/supabase'
+
+// 套用 Toast UI Viewer 樣式
+import '@toast-ui/editor/dist/toastui-editor-viewer.css'
+
+const route = useRoute()
+const postId = route.params.id
+
+const post = ref(null)
+const loading = ref(true)
+const errorMsg = ref('')
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+onMounted(async () => {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', postId)
+    .single()
+
+  if (data) {
+    post.value = data
+  } else if (error) {
+    errorMsg.value = '文章載入失敗：' + error.message
+    console.error(error)
+  }
+
+  loading.value = false
+})
+</script>
+
+<template>
+  <div class="wrapper">
+    <div v-if="loading">載入中...</div>
+
+    <div v-else-if="errorMsg">
+      <p style="color: red">{{ errorMsg }}</p>
+    </div>
+
+    <main v-else class="post">
+      <h1 class="post-title">{{ post.title }}</h1>
+      <p class="post-meta">📌 類型 ｜ {{ post.date }} ｜ {{ post.author }}</p>
+      <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
+
+      <!-- 使用 html 欄位渲染 -->
+      <article class="post-content toastui-editor-contents" v-html="post.html" />
+
+      <div class="tag-area" v-if="post.tags">
+        <strong>標籤：</strong>
+        <span
+          class="tag"
+          v-for="tag in Array.isArray(post.tags) ? post.tags : post.tags.split(',')"
+          :key="tag"
+        >
+          {{ tag }}
+        </span>
+      </div>
+    </main>
+
+    <footer>Copyright © Andrew Portfolio Website 2025</footer>
+    <button @click="scrollToTop" class="back-to-top">↑</button>
+  </div>
+</template>
+
+<style scoped>
+.wrapper {
+  max-width: 1200px;
+  margin: 6rem auto 2rem;
+  padding: 0 1rem;
+  font-family: 'Noto Sans TC', sans-serif;
+  background: #f9f9f9;
+}
+
+.post-image {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.post-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #777;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+}
+
+.post-content {
+  margin-bottom: 2rem;
+  line-height: 1.8;
+  color: #444;
+  font-size: 1rem;
+}
+
+.tag-area {
+  margin-top: 2rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: #eee;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+footer {
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.875rem;
+  color: #888;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: black;
+  color: white;
+  padding: 0.6rem 0.8rem;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+</style>
