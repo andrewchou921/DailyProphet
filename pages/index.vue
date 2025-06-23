@@ -41,7 +41,14 @@ useHead({
       <nav class="menu" :class="{ open: showMenu }">
         <a href="#" @click="showMenu = false">學習筆記</a>
         <a href="#" @click="showMenu = false">生活紀錄</a>
-        <NuxtLink to="/" class="portfolio-btn" @click="showMenu = false">前往作品集</NuxtLink>
+        <a
+            href="https://andrewchou921.github.io/work/"
+            class="portfolio-btn"
+            @click="showMenu = false"
+            target="_blank"
+            rel="noopener noreferrer">
+            前往作品集
+        </a>
       </nav>
       <div class="overlay" v-if="showMenu" @click="showMenu = false"></div>
     </header>
@@ -55,6 +62,7 @@ useHead({
 
 
     <!-- 主標題 -->
+    <section class="card-section">
     <main>
       <NuxtLink to="/post">文章</NuxtLink>
       <NuxtLink to="/admin">新增文章</NuxtLink>
@@ -101,6 +109,7 @@ useHead({
         <button v-for="n in 4" :key="n">{{ n }}</button>
       </div>
     </main>
+    </section>
 
     <footer>Copyright © Andrew Portfolio Website 2025</footer>
     <button @click="scrollToTop" class="back-to-top">
@@ -114,6 +123,15 @@ useHead({
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.card-section {
+  background-color: #ead2ac;
+  /* background-image: url('/public/grunge.jpg');  ✅ 你的圖片路徑  */
+  width: 100%;
+  padding: 0;
+  position: relative;  /* ✅ 加這行 z-index 才有效 */
+  z-index: 1;
 }
 
 main {
@@ -132,7 +150,7 @@ body {
 
 .wrapper {
   font-family: 'Noto Sans TC', Arial, sans-serif;
-  background: transparent;
+  background-color: #ead2ac; /* 與 body 一樣 */
   width: 100%;
 }
 
@@ -172,6 +190,7 @@ body {
   color: #fff;
   gap: 1.5rem;
   align-items: center;
+  font-family: 'Noto Sans TC', sans-serif;
 }
 
 .menu a {
@@ -207,7 +226,7 @@ body {
   gap: 2rem;
   background: #d7b892;
   padding: 1.5rem;
-  border-radius: 0px;
+  border-radius: 10px;
   margin-bottom: 3rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   position: relative;
@@ -263,13 +282,14 @@ body {
 .card {
   background: #d7b892;
   padding: 1.5rem;
-  border-radius: 0px;
+  border-radius: 10px;
   /* border: 3px solid #3e1f0d; */
   color: #3e1f0d;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   transition: transform 0.2s ease;
+  z-index: 1;
 }
 
 .card:hover {
@@ -399,8 +419,8 @@ footer {
   padding: 1rem;
   font-size: 0.75rem;
   text-align: center;
-  background: #ead2ac;
-  color: #222;
+  background: rgb(62, 31, 13);
+  color: #fff;
   border-top: 1px solid #3e1f0d;
 }
 
@@ -473,6 +493,7 @@ footer {
   cursor: pointer;
   margin-left: auto;
   z-index: 300;
+  color: #F0DBC0;
 }
 
 @media (max-width: 768px) {
@@ -627,9 +648,10 @@ footer {
   content: '';
   position: fixed;
   inset: 0;
-  background-image: url('/noise-texture.png'); /* 雜訊圖片路徑 */
+  background-image: url('/rpbg.png'); /* 雜訊圖片路徑 */
   background-size: cover;
-  opacity: 0.4; /* 雜訊強度 */
+  background-size: 1400px auto; /* ✅ 雜訊圖片縮小 */
+  opacity: 0.1; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
     animation: noiseMove 25s linear infinite;

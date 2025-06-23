@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "deploy": "nuxi generate && gh-pages -d .output/public"
+
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
