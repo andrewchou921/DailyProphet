@@ -22,7 +22,12 @@ watch(showMenu, (val) => {
     <div class="logo">
       <img src="/logo-banner.png" alt="LOGO" />
     </div>
-    <button class="menu-toggle" @click="toggleMenu">☰</button>
+
+    <!-- ✅ 漢堡圖示按鈕 -->
+    <button class="menu-toggle" @click="toggleMenu">
+      <img src="/icons/gryffindor.png" alt="Gryffindor Menu" class="gryffindor-icon" />
+    </button>
+
     <nav class="menu" :class="{ open: showMenu }">
       <a href="#" @click="showMenu = false">學習筆記</a>
       <a href="#" @click="showMenu = false">生活紀錄</a>
@@ -36,10 +41,11 @@ watch(showMenu, (val) => {
         前往作品集
       </a>
     </nav>
+
+    <!-- ✅ 點選遮罩也會關閉選單 -->
     <div class="overlay" v-if="showMenu" @click="showMenu = false"></div>
   </header>
 </template>
-
 
 <style scoped>
 .navbar {
@@ -51,13 +57,15 @@ watch(showMenu, (val) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  padding-top: 0px;
-  padding-bottom: 0px;
+  padding: 1rem 1.5rem 0 1.5rem;
   background-color: #3e1f0d;
   color: #fff;
   font-family: 'Georgia', serif;
   border-bottom: 1px solid #eaeaea;
+}
+
+.navbar {
+  padding-top: 0 !important;
 }
 
 .logo img {
@@ -71,6 +79,7 @@ watch(showMenu, (val) => {
   }
 }
 
+/* 主要導覽選單 */
 .menu {
   display: flex;
   color: #fff;
@@ -95,19 +104,26 @@ watch(showMenu, (val) => {
   cursor: pointer;
 }
 
-/* 漢堡按鈕樣式 */
+/* 漢堡圖示按鈕（預設隱藏） */
 .menu-toggle {
   display: none;
   background: none;
   border: none;
-  font-size: 1.8rem;
   cursor: pointer;
   margin-left: auto;
   z-index: 300;
-  color: #F0DBC0;
 }
 
-/* 手機版選單樣式 */
+/* 圖示樣式 */
+.menu-toggle img.gryffindor-icon {
+  width: 40px;
+  height: auto;
+  border-radius: 50%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+/* 手機版選單 */
 @media (max-width: 768px) {
   .menu-toggle {
     display: block;
