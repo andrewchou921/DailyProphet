@@ -9,11 +9,11 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "deploy": "nuxi generate && gh-pages -d .output/public"
-
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
     "@toast-ui/editor": "^3.2.2",
+    "marked": "^15.0.12",
     "nuxt": "^3.17.5",
     "vue": "^3.5.16",
     "vue-router": "^4.5.1"

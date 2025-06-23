@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useHead, useRouter } from '#app'
 import { supabase } from '~/utils/supabase'
 
+
 const showMenu = ref(false)
 const posts = ref<any[]>([])
 
@@ -126,11 +127,11 @@ useHead({
 }
 
 .card-section {
-  background-color: #ead2ac;
+  /* background-color: #ead2ac; */
   /* background-image: url('/public/grunge.jpg');  ✅ 你的圖片路徑  */
   width: 100%;
   padding: 0;
-  position: relative;  /* ✅ 加這行 z-index 才有效 */
+  position: relative;  
   z-index: 1;
 }
 
@@ -655,7 +656,7 @@ footer {
   opacity: 0.1; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
-    animation: noiseMove 25s linear infinite;
+    animation: noiseMove 20s linear infinite;
 }
 
 .paper-banner {

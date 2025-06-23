@@ -21,6 +21,16 @@ const router = useRouter()
 const successMessage = ref('')
 const errorMessage = ref('')
 
+// 擷取純文字摘要
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, '') // 移除圖片 markdown
+    .replace(/\[.*?\]\(.*?\)/g, '')  // 移除連結 markdown
+    .replace(/[#>*_~\-]+/g, '')      // 移除標題/樣式符號
+    .replace(/\n/g, ' ')             // 換行換成空格
+    .trim()
+}
+
 // 初始化 Toast Editor
 onMounted(() => {
   if ($toastEditor) {
@@ -39,8 +49,8 @@ onMounted(() => {
   } else {
     console.error('❌ toastEditor 尚未載入')
   }
-  // 預設日期為今日
-  date.value = new Date().toISOString().split('T')[0]
+
+  date.value = new Date().toISOString().split('T')[0] // 預設日期
 })
 
 // 處理圖片變更
@@ -86,10 +96,13 @@ const submitPost = async () => {
     imageUrl = data.publicUrl
   }
 
+  const summary = stripMarkdown(content.value).slice(0, 100)
+
   const { error } = await supabase.from('posts').insert([{
     title: title.value,
     content: content.value,
     html: htmlContent.value,
+    summary,
     date: date.value,
     author: author.value,
     tags: tags.value.split(',').map(tag => tag.trim()),
