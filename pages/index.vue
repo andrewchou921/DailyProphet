@@ -583,6 +583,7 @@ footer {
   margin: 4rem auto 3rem;
   padding-top: 6rem;
   width: 100%;
+  padding-top: 100px; /* 或根據 navbar 高度給 padding */
 }
 
 @media (max-width: 600px) {
