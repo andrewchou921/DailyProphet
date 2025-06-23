@@ -2,7 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useHead, useRouter } from '#app'
 import { supabase } from '~/utils/supabase'
+import NavMenu from '~/components/NavMenu.vue'
+import BackToTop from '~/components/BackToTop.vue'
 
+
+// 頂部按鈕消失
+const menuOpen = ref(false)
 
 const showMenu = ref(false)
 const posts = ref<any[]>([])
@@ -33,26 +38,7 @@ useHead({
 
 <template>
   <div class="wrapper">
-    <!-- 導覽列 -->
-    <header class="navbar">
-      <div class="logo">
-        <img src="/logo-banner.png" alt="LOGO" />
-      </div>
-      <button class="menu-toggle" @click="toggleMenu">☰</button>
-      <nav class="menu" :class="{ open: showMenu }">
-        <a href="#" @click="showMenu = false">學習筆記</a>
-        <a href="#" @click="showMenu = false">生活紀錄</a>
-        <a
-            href="https://andrewchou921.github.io/work/"
-            class="portfolio-btn"
-            @click="showMenu = false"
-            target="_blank"
-            rel="noopener noreferrer">
-            前往作品集
-        </a>
-      </nav>
-      <div class="overlay" v-if="showMenu" @click="showMenu = false"></div>
-    </header>
+  <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
 
 <section class="paper-header">
   <div class="paper-banner">
@@ -77,7 +63,7 @@ useHead({
           <h2>
             <NuxtLink :to="`/post/${posts[0].id}`">{{ posts[0].title }}</NuxtLink>
           </h2>
-          <p class="desc">{{ posts[0].content.slice(0, 40) }}...</p>
+          <p class="desc">{{ posts[0].summary || posts[0].content.slice(0, 40) }}...</p>
           <div class="author">
             <div class="avatar"></div>
             <span>{{ posts[0].author }}</span>
@@ -98,7 +84,7 @@ useHead({
           </div>
           <p class="date">📌 類型 ｜ {{ post.date }}</p>
           <h3 class="card-title">{{ post.title }}</h3>
-          <p class="desc">{{ post.content.slice(0, 40) }}...</p>
+          <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
           <div class="author">
             <div class="avatar"></div>
             <span>{{ post.author }}</span>
@@ -113,9 +99,8 @@ useHead({
     </section>
 
     <footer>Copyright © Andrew Portfolio Website 2025</footer>
-    <button @click="scrollToTop" class="back-to-top">
-      <img src="/back-to-top-golden-snitch.png" alt="回頂部" class="snitch-icon" />
-    </button>
+    <BackToTop :hidden="menuOpen" />
+
   </div>
 </template>
 
@@ -155,60 +140,12 @@ body {
   width: 100%;
 }
 
-/* 導覽列 */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 999;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem; /* 原本是 3rem，改小讓整體內容靠近邊緣 */
-  padding-top: 0px;
-  padding-bottom: 0px;
-  background-color: #3e1f0d;
-  color: #fff;
-  font-family: 'Georgia', serif;
-  border-bottom: 1px solid #eaeaea;
-}
 
 .logo img {
   height: 70px; /* 或其他你想要的高度 */
   object-fit: contain;
 }
 
-/* 手機板：畫面寬度小於 600px 時套用 */
-@media (max-width: 600px) {
-  .logo img {
-    height: 50px;
-  }
-}
-
-.menu {
-  display: flex;
-  color: #fff;
-  gap: 1.5rem;
-  align-items: center;
-  font-family: 'Noto Sans TC', sans-serif;
-}
-
-.menu a {
-  text-decoration: none;
-  color: #fff;
-  font-size: 0.95rem;
-}
-
-.portfolio-btn {
-  background: #c40000;
-  color: white !important;
-  padding: 0.4rem 1rem;
-  font-size: 0.875rem;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-}
 
 
 .title {
@@ -653,7 +590,7 @@ footer {
   background-image: url('/rpbg.png'); /* 雜訊圖片路徑 */
   background-size: cover;
   background-size: 1400px auto; /* ✅ 雜訊圖片縮小 */
-  opacity: 0.1; /* 雜訊強度 */
+  opacity: 0.05; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
     animation: noiseMove 20s linear infinite;

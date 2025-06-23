@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import { useNuxtApp } from '#app'
 import { supabase } from '~/utils/supabase'
 
-// 表單欄位
 const title = ref('')
+const summary = ref('') // ✅ 新增 summary 欄位
 const content = ref('')
 const htmlContent = ref('')
 const date = ref('')
@@ -21,17 +21,15 @@ const router = useRouter()
 const successMessage = ref('')
 const errorMessage = ref('')
 
-// 擷取純文字摘要
 function stripMarkdown(text: string): string {
   return text
-    .replace(/!\[.*?\]\(.*?\)/g, '') // 移除圖片 markdown
-    .replace(/\[.*?\]\(.*?\)/g, '')  // 移除連結 markdown
-    .replace(/[#>*_~\-]+/g, '')      // 移除標題/樣式符號
-    .replace(/\n/g, ' ')             // 換行換成空格
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[.*?\]\(.*?\)/g, '')
+    .replace(/[#>*_~\-]+/g, '')
+    .replace(/\n/g, ' ')
     .trim()
 }
 
-// 初始化 Toast Editor
 onMounted(() => {
   if ($toastEditor) {
     editorInstance = new $toastEditor({
@@ -50,10 +48,9 @@ onMounted(() => {
     console.error('❌ toastEditor 尚未載入')
   }
 
-  date.value = new Date().toISOString().split('T')[0] // 預設日期
+  date.value = new Date().toISOString().split('T')[0]
 })
 
-// 處理圖片變更
 const handleImageChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   if (target.files?.length) {
@@ -61,7 +58,6 @@ const handleImageChange = (e: Event) => {
   }
 }
 
-// 發佈文章
 const submitPost = async () => {
   if (loading.value) return
   loading.value = true
@@ -96,13 +92,14 @@ const submitPost = async () => {
     imageUrl = data.publicUrl
   }
 
-  const summary = stripMarkdown(content.value).slice(0, 100)
+  // ✅ 使用手動 summary，若沒填則自動產生
+  const finalSummary = summary.value.trim() || stripMarkdown(content.value).slice(0, 100)
 
   const { error } = await supabase.from('posts').insert([{
     title: title.value,
+    summary: finalSummary,
     content: content.value,
     html: htmlContent.value,
-    summary,
     date: date.value,
     author: author.value,
     tags: tags.value.split(',').map(tag => tag.trim()),
@@ -115,8 +112,8 @@ const submitPost = async () => {
   } else {
     successMessage.value = '✅ 文章發布成功！'
     errorMessage.value = ''
-    // 清空欄位
     title.value = ''
+    summary.value = ''
     content.value = ''
     htmlContent.value = ''
     date.value = new Date().toISOString().split('T')[0]
@@ -124,7 +121,6 @@ const submitPost = async () => {
     tags.value = ''
     imageFile.value = null
     editorInstance.setMarkdown('')
-    // 導回文章列表
     setTimeout(() => {
       router.push('/posts')
     }, 1500)
@@ -141,6 +137,11 @@ const submitPost = async () => {
     <div class="form-field">
       <label>標題 *</label>
       <input v-model="title" type="text" />
+    </div>
+
+    <div class="form-field">
+      <label>描述 / 摘要（可選填）</label>
+      <textarea v-model="summary" rows="3" placeholder="請輸入文章描述..."></textarea>
     </div>
 
     <div class="form-field">
@@ -195,11 +196,12 @@ label {
   margin-bottom: 0.3rem;
   font-weight: bold;
 }
-input {
+input, textarea {
   width: 100%;
   padding: 0.6rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-family: inherit;
 }
 button {
   background: black;

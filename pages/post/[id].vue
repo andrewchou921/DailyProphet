@@ -2,9 +2,15 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '~/utils/supabase'
+import BackToTop from '~/components/BackToTop.vue'
+import NavMenu from '~/components/NavMenu.vue'
+
 
 // 套用 Toast UI Viewer 樣式
 import '@toast-ui/editor/dist/toastui-editor-viewer.css'
+
+// 頂部按鈕消失
+const menuOpen = ref(false)
 
 const route = useRoute()
 const postId = route.params.id
@@ -37,6 +43,7 @@ onMounted(async () => {
 
 <template>
   <div class="wrapper">
+    <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
     <div v-if="loading">載入中...</div>
 
     <div v-else-if="errorMsg">
@@ -62,10 +69,9 @@ onMounted(async () => {
         </span>
       </div>
     </main>
-
-    <footer>Copyright © Andrew Portfolio Website 2025</footer>
-    <button @click="scrollToTop" class="back-to-top">↑</button>
   </div>
+   <BackToTop :hidden="menuOpen" />
+  <footer>Copyright © Andrew Portfolio Website 2025</footer>
 </template>
 
 <style scoped>
@@ -126,16 +132,5 @@ footer {
   color: #888;
 }
 
-.back-to-top {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  background: black;
-  color: white;
-  padding: 0.6rem 0.8rem;
-  border-radius: 50%;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-}
+
 </style>
