@@ -34,7 +34,7 @@ const selectCategory = (category: string) => {
 
     <!-- ✅ 漢堡圖示按鈕 -->
     <button class="menu-toggle" @click="toggleMenu">
-      <img src="/public/icons/gryffindor.png" alt="Gryffindor Menu" class="gryffindor-icon" />
+      <img src="/icons/gryffindor.png" alt="Gryffindor Menu" class="gryffindor-icon" />
     </button>
 
     <nav class="menu" :class="{ open: showMenu }">
