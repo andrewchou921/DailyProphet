@@ -106,8 +106,8 @@ useHead({
     <!-- 主標題 -->
     <section class="card-section" ref="postSection">
       <main>
-        <NuxtLink to="/post">文章</NuxtLink>
-        <NuxtLink to="/admin">新增文章</NuxtLink>
+        <!-- <NuxtLink to="/post">文章</NuxtLink>
+        <NuxtLink to="/admin">新增文章</NuxtLink> -->
 
         <!-- ✅ 最新文章（只顯示篩選後的第一篇） -->
         <Transition name="fade">
