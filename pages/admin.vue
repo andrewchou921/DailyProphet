@@ -5,7 +5,7 @@ import { useNuxtApp } from '#app'
 import { supabase } from '~/utils/supabase'
 
 const title = ref('')
-const summary = ref('') // ✅ 新增 summary 欄位
+const summary = ref('')
 const content = ref('')
 const htmlContent = ref('')
 const date = ref('')
@@ -30,7 +30,16 @@ function stripMarkdown(text: string): string {
     .trim()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
+
+  if (!session) {
+    router.push('/login')
+    return
+  }
+
   if ($toastEditor) {
     editorInstance = new $toastEditor({
       el: document.querySelector('#editor')!,
@@ -92,7 +101,6 @@ const submitPost = async () => {
     imageUrl = data.publicUrl
   }
 
-  // ✅ 使用手動 summary，若沒填則自動產生
   const finalSummary = summary.value.trim() || stripMarkdown(content.value).slice(0, 100)
 
   const { error } = await supabase.from('posts').insert([{

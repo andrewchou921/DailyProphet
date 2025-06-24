@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   onMenuToggle?: (val: boolean) => void
 }>()
 
 const showMenu = ref(false)
+const router = useRouter()
 
 const toggleMenu = () => {
   showMenu.value = !showMenu.value
 }
 
-// 每當 showMenu 改變時，通知父層
+// 通知父元件選單狀態
 watch(showMenu, (val) => {
   props.onMenuToggle?.(val)
 })
 
-// 點完關掉選單
+// 點擊分類後發送事件並關閉選單
 const emit = defineEmits(['categorySelected'])
 
 const selectCategory = (category: string) => {
@@ -24,24 +26,40 @@ const selectCategory = (category: string) => {
   showMenu.value = false 
 }
 
+// ✅ 彩蛋：點 LOGO 5 次進入登入頁
+const logoClickCount = ref(0)
+let clickTimer: ReturnType<typeof setTimeout> | null = null
+
+const handleLogoClick = () => {
+  logoClickCount.value++
+
+  // 在 5 秒內點滿 5 次才跳轉，避免誤觸
+  if (clickTimer) clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
+    logoClickCount.value = 0
+  }, 5000)
+
+  if (logoClickCount.value >= 5) {
+    logoClickCount.value = 0
+    router.push('/login')
+  }
+}
 </script>
 
 <template>
   <header class="navbar">
-    <div class="logo">
+    <div class="logo" @click="handleLogoClick">
       <img src="/logo-banner.png" alt="LOGO" />
     </div>
 
-    <!-- ✅ 漢堡圖示按鈕 -->
     <button class="menu-toggle" @click="toggleMenu">
       <img src="/icons/gryffindor.png" alt="Gryffindor Menu" class="gryffindor-icon" />
     </button>
 
     <nav class="menu" :class="{ open: showMenu }">
-     <!-- ✅ 用 selectCategory 發送事件 -->
-     <a href="#" @click.prevent="selectCategory('全部')">全部貼文</a>
-     <a href="#" @click.prevent="selectCategory('學習筆記')">學習筆記</a>
-     <a href="#" @click.prevent="selectCategory('生活紀錄')">生活紀錄</a>
+      <a href="#" @click.prevent="selectCategory('全部')">全部貼文</a>
+      <a href="#" @click.prevent="selectCategory('學習筆記')">學習筆記</a>
+      <a href="#" @click.prevent="selectCategory('生活紀錄')">生活紀錄</a>
       <a
         href="https://andrewchou921.github.io/work/"
         class="portfolio-btn"
@@ -53,7 +71,6 @@ const selectCategory = (category: string) => {
       </a>
     </nav>
 
-    <!-- ✅ 點選遮罩也會關閉選單 -->
     <div class="overlay" v-if="showMenu" @click="showMenu = false"></div>
   </header>
 </template>
