@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useHead, useRouter } from '#app'
 import { supabase } from '~/utils/supabase'
 import NavMenu from '~/components/NavMenu.vue'
 import BackToTop from '~/components/BackToTop.vue'
 
+
+
+const totalPages = computed(() => Math.ceil(filteredPosts.value.length / postsPerPage))
 
 // 篩選標籤
 const selectedCategory = ref('全部')
@@ -17,6 +20,27 @@ const filteredPosts = computed(() => {
 
 function handleCategoryChange(category: string) {
   selectedCategory.value = category
+}
+
+// 🔧 你的分頁變數（如果還沒定義）
+const currentPage = ref(1)
+const postsPerPage = 3 //分頁貼文數量
+
+// 🔧 分頁後的貼文
+const paginatedPosts = computed(() => {
+  const start = (currentPage.value - 1) * postsPerPage
+  return filteredPosts.value.slice(start, start + postsPerPage)
+})
+
+// ✅ 用來捲動的區塊參考
+const postSection = ref<HTMLElement | null>(null)
+
+// ✅ 點擊分頁按鈕時會更新分頁並滾動到文章區
+function goToPage(page: number) {
+  currentPage.value = page
+  nextTick(() => {
+    postSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
 }
 
 
@@ -83,7 +107,7 @@ useHead({
 
 
     <!-- 主標題 -->
-    <section class="card-section">
+    <section class="card-section" ref="postSection">
     <main>
       <NuxtLink to="/post">文章</NuxtLink>
       <NuxtLink to="/admin">新增文章</NuxtLink>\
@@ -116,32 +140,41 @@ useHead({
 
 
      <!-- 其他文章 -->
-         <TransitionGroup name="fade" tag="section" class="card-grid">
-           <NuxtLink
-                      v-for="post in filteredPosts"
-             :key="post.id"
-             :to="`/post/${post.id}`"
-             class="card"
-           >
+        <TransitionGroup name="fade" tag="section" class="card-grid">
+  <NuxtLink
+    v-for="post in paginatedPosts"
+    :key="post.id"
+    :to="`/post/${post.id}`"
+    class="card"
+  >
+    <div class="thumbnail">
+      <img :src="post.image_url || '/default.jpg'" alt="封面圖" />
+    </div>
+    <p class="date">
+      ✨ {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }}
+    </p>
+    <h3 class="card-title">{{ post.title }}</h3>
+    <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
+    <div class="author">
+      <div class="avatar"></div>
+      <span>{{ post.author }}</span>
+    </div>
+  </NuxtLink>
+</TransitionGroup>
 
-          <div class="thumbnail">
-            <img :src="post.image_url || '/default.jpg'" alt="封面圖" />
-          </div>
-          <p class="date">
-               ✨ {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }}
-          </p>
-          <h3 class="card-title">{{ post.title }}</h3>
-          <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
-          <div class="author">
-            <div class="avatar"></div>
-            <span>{{ post.author }}</span>
-          </div>
-        </NuxtLink>
-      </TransitionGroup>
+  <!-- 分頁按鈕 -->
+<div class="pagination">
+  <button
+    v-for="n in totalPages"
+    :key="n"
+    :class="{ active: currentPage === n }"
+    @click="goToPage(n)"
+  >
+    {{ n }}
+  </button>
+</div>
 
-      <div class="pagination">
-        <button v-for="n in 4" :key="n">{{ n }}</button>
-      </div>
+
     </main>
     </section>
 
@@ -235,6 +268,37 @@ body {
   display: block;
   transition: transform 0.3s ease;
   z-index: 0;
+}
+
+/* ✅ 最新貼文：加入模糊遮罩 + 濾鏡 + 放大效果 */
+.latest-post .thumbnail {
+  position: relative;
+  overflow: hidden;
+}
+
+.latest-post .thumbnail::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(1px);
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  z-index: 1;
+}
+
+.latest-post .thumbnail:hover::before {
+  opacity: 1;
+}
+
+.latest-post .thumbnail img {
+  transition: transform 0.5s ease, filter 0.5s ease;
+  filter: brightness(0.95) contrast(1);
+}
+
+.latest-post .thumbnail:hover img {
+  transform: scale(1.05);
+  filter: brightness(1) contrast(1.1);
 }
 
 
@@ -381,7 +445,7 @@ body {
   border-radius: 50%;
 }
 
-/* 分頁 */
+/* 分頁按鈕 */
 .pagination {
   display: flex;
   justify-content: center;
@@ -393,10 +457,21 @@ body {
   width: 32px;
   height: 32px;
   border: none;
-  background: #eee;
+  background: rgb(196, 0, 0);
   border-radius: 6px;
   font-weight: bold;
+  color: #fff;
   cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease; /* ✅ 重點 */
+}
+.pagination button:hover {
+  background-color: #3e1f0d;
+  color: #fff;
+}
+
+.pagination button.active {
+  background: #3e1f0d;
+  color: white;
 }
 
 /* 頁尾與返回 */
