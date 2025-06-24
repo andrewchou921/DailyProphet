@@ -64,7 +64,7 @@ onMounted(async () => {
 // })
 
 useHead({
-  title: '九又四分之三月台-入口',
+  title: '九又四分之三月台',
   meta: [{ name: 'description', content: '歡迎來到安卓的技術與生活部落格！' }]
 })
 </script>
