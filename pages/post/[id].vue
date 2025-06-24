@@ -50,6 +50,7 @@ onMounted(async () => {
 </script>
 
 <template>
+  
   <div class="wrapper">
     <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
     <div v-if="loading">載入中...</div>
@@ -59,6 +60,7 @@ onMounted(async () => {
     </div>
 
     <main v-else class="post">
+      <NuxtLink to="/" class="back-btn">← 返回首頁</NuxtLink>
       <h1 class="post-title">{{ post.title }}</h1>
       <p class="post-meta">
         📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
@@ -85,12 +87,36 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+
+.toastui-editor-contents {
+  font-family: 'Noto Sans TC', sans-serif !important;
+}
+
+
+.post {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: bold;
+}
 .wrapper {
+  position: relative;
   max-width: 1200px;
   margin: 6rem auto 2rem;
   padding: 0 1rem;
   font-family: 'Noto Sans TC', sans-serif;
-  background: #f9f9f9;
+  z-index: 0;
+  background-color: rgb(254, 248, 241);
+}
+
+.wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/paperboard-texture.jpg'); 
+  background-size: cover;
+  opacity: 0.6; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
+  background-repeat: no-repeat;
+  background-blend-mode: multiply;
+  z-index: -1;
 }
 
 .post-image {
@@ -128,11 +154,11 @@ onMounted(async () => {
 }
 
 .tag {
-  background: #eee;
+  background: rgb(62, 31, 13);
   border-radius: 999px;
   padding: 0.3rem 0.8rem;
   font-size: 0.875rem;
-  color: #333;
+  color: #fff;
 }
 
 footer {
@@ -141,6 +167,25 @@ footer {
   font-size: 0.875rem;
   color: #888;
 }
+
+/* 返回按鈕 */
+.back-btn {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: #ffffff;
+  background-color: rgb(196, 0, 0);
+  text-decoration: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.back-btn:hover {
+  background-color: #3e1f0d;
+  color: #fff;
+}
+
 
 
 </style>

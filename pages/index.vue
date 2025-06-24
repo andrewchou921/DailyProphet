@@ -95,94 +95,98 @@ useHead({
 
 <template>
   <div class="wrapper">
-  <NavMenu :onMenuToggle="(val) => (menuOpen = val)" @categorySelected="handleCategoryChange" />
+    <NavMenu :onMenuToggle="(val) => (menuOpen = val)" @categorySelected="handleCategoryChange" />
 
-
-<section class="paper-header">
-  <div class="paper-banner">
-    <img src="/title.svg" alt="安卓預言家日報標頭" class="paper-title-img" />
-  </div>
-</section>
-
-
+    <section class="paper-header">
+      <div class="paper-banner">
+        <img src="/title.svg" alt="安卓預言家日報標頭" class="paper-title-img" />
+      </div>
+    </section>
 
     <!-- 主標題 -->
     <section class="card-section" ref="postSection">
-    <main>
-      <NuxtLink to="/post">文章</NuxtLink>
-      <NuxtLink to="/admin">新增文章</NuxtLink>\
+      <main>
+        <NuxtLink to="/post">文章</NuxtLink>
+        <NuxtLink to="/admin">新增文章</NuxtLink>
 
-      <!-- 最新文章（只顯示篩選後的第一篇） -->
-       <Transition name="fade">
-         <section class="latest-post" v-if="filteredPosts.length">
-           <NuxtLink :to="`/post/${filteredPosts[0].id}`" class="thumbnail">
-             <img :src="filteredPosts[0].image_url || '/default.jpg'" alt="封面圖片" />
-           </NuxtLink>
-           <div class="latest-content">
+        <!-- ✅ 最新文章（只顯示篩選後的第一篇） -->
+        <Transition name="fade">
+          <section class="latest-post" v-if="filteredPosts.length">
+            <NuxtLink :to="`/post/${filteredPosts[0].id}`" class="thumbnail">
+              <img :src="filteredPosts[0].image_url || '/default.jpg'" alt="封面圖片" />
+            </NuxtLink>
+            <div class="latest-content">
               <p class="date">
-               🎩 {{ filteredPosts[0].tags?.[0] || '未分類' }} ｜ {{ filteredPosts[0].date }}
-             </p>
-             <h2>
-               <NuxtLink :to="`/post/${filteredPosts[0].id}`">
-                 {{ filteredPosts[0].title }}
-               </NuxtLink>
-             </h2>
-             <p class="desc">
-               {{ filteredPosts[0].summary || filteredPosts[0].content.slice(0, 40) }}...
-             </p>
-             <div class="author">
-               <div class="avatar"></div>
-               <span>{{ filteredPosts[0].author }}</span>
-             </div>
-           </div>
-         </section>
-       </Transition>
+                🎩 {{ filteredPosts[0].tags?.[0] || '未分類' }} ｜ {{ filteredPosts[0].date }}
+              </p>
+              <h2>
+                <NuxtLink :to="`/post/${filteredPosts[0].id}`">
+                  {{ filteredPosts[0].title }}
+                </NuxtLink>
+              </h2>
+              <p class="desc">
+                {{ filteredPosts[0].summary || filteredPosts[0].content.slice(0, 40) }}...
+              </p>
+              <div class="author">
+                <div class="avatar-wrapper">
+                  <img
+                    class="avatar-img"
+                    :src="filteredPosts[0].author_image || '/author.jpg'"
+                    alt="作者頭像" />
+                </div>
+                <span class="author-name">{{ filteredPosts[0].author }}</span>
+              </div>
+            </div>
+          </section>
+        </Transition>
 
-
-     <!-- 其他文章 -->
+        <!-- ✅ 其他文章區塊 -->
         <TransitionGroup name="fade" tag="section" class="card-grid">
-  <NuxtLink
-    v-for="post in paginatedPosts"
-    :key="post.id"
-    :to="`/post/${post.id}`"
-    class="card"
-  >
-    <div class="thumbnail">
-      <img :src="post.image_url || '/default.jpg'" alt="封面圖" />
-    </div>
-    <p class="date">
-      ✨ {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }}
-    </p>
-    <h3 class="card-title">{{ post.title }}</h3>
-    <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
-    <div class="author">
-      <div class="avatar"></div>
-      <span>{{ post.author }}</span>
-    </div>
-  </NuxtLink>
-</TransitionGroup>
+          <NuxtLink
+            v-for="post in paginatedPosts"
+            :key="post.id"
+            :to="`/post/${post.id}`"
+            class="card"
+          >
+            <div class="thumbnail">
+              <img :src="post.image_url || '/default.jpg'" alt="封面圖" />
+            </div>
+            <p class="date">
+              ✨ {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }}
+            </p>
+            <h3 class="card-title">{{ post.title }}</h3>
+            <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
+            <div class="author">
+              <div class="avatar-wrapper">
+                <img
+                  class="avatar-img"
+                  :src="post.author_image || '/author.jpg'"
+                  alt="作者頭像" />
+              </div>
+              <span class="author-name">{{ post.author }}</span>
+            </div>
+          </NuxtLink>
+        </TransitionGroup>
 
-  <!-- 分頁按鈕 -->
-<div class="pagination">
-  <button
-    v-for="n in totalPages"
-    :key="n"
-    :class="{ active: currentPage === n }"
-    @click="goToPage(n)"
-  >
-    {{ n }}
-  </button>
-</div>
-
-
-    </main>
+        <!-- ✅ 分頁按鈕 -->
+        <div class="pagination">
+          <button
+            v-for="n in totalPages"
+            :key="n"
+            :class="{ active: currentPage === n }"
+            @click="goToPage(n)"
+          >
+            {{ n }}
+          </button>
+        </div>
+      </main>
     </section>
 
     <footer>Copyright © Andrew Portfolio Website 2025</footer>
     <BackToTop :hidden="menuOpen" />
-
   </div>
 </template>
+
 
 <style>
 * {
@@ -304,8 +308,8 @@ body {
 
 /* 文章資訊 */
 .latest-content .date {
-  font-size: 0.75rem;
-  color: #888;
+  font-size: 1rem;
+  color: rgb(62, 31, 13);
   margin-bottom: 0.5rem;
 }
 
@@ -316,7 +320,7 @@ body {
 
 .latest-content .desc {
   font-size: 0.9rem;
-  color: #444;
+  color: rgb(62, 31, 13);
   margin-bottom: 1rem;
 }
 
@@ -430,20 +434,35 @@ body {
   margin: 0.5rem 0;
 }
 
-.card .author {
+.author {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: bold;
-  font-size: 0.85rem;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
-.card .avatar {
+.avatar-wrapper {
   width: 32px;
   height: 32px;
-  background: #3e1f0d;
   border-radius: 50%;
+  overflow: hidden;
+  background-color: #3e1f0d;
+  flex-shrink: 0;
 }
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.author-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #3e1f0d;
+}
+
 
 /* 分頁按鈕 */
 .pagination {
@@ -454,8 +473,8 @@ body {
 }
 
 .pagination button {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: rgb(196, 0, 0);
   border-radius: 6px;
