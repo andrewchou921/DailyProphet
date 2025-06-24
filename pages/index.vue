@@ -661,6 +661,7 @@ footer {
   align-items: center;
   margin: 4rem auto 3rem;
   padding-top: 6rem;
+  margin-bottom: 4rem;
   width: 100%;
   padding-top: 100px; /* 或根據 navbar 高度給 padding */
 }
@@ -669,6 +670,7 @@ footer {
   .paper-header {
     margin-top: 3rem;
     padding-top: 4rem;
+    margin-bottom: 3rem;
   }
 }
 
