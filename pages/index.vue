@@ -6,6 +6,20 @@ import NavMenu from '~/components/NavMenu.vue'
 import BackToTop from '~/components/BackToTop.vue'
 
 
+// 篩選標籤
+const selectedCategory = ref('全部')
+
+const filteredPosts = computed(() => {
+  if (selectedCategory.value === '全部') return posts.value
+  return posts.value.filter(post => post.tags?.[0] === selectedCategory.value)
+})
+
+
+function handleCategoryChange(category: string) {
+  selectedCategory.value = category
+}
+
+
 // 頂部按鈕消失
 const menuOpen = ref(false)
 
@@ -20,25 +34,45 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// tags 字串轉陣列
 onMounted(async () => {
   const { data, error } = await supabase
     .from('posts')
     .select('*')
     .order('date', { ascending: false })
 
-  if (data) posts.value = data
+  if (data) {
+    posts.value = data.map(post => {
+      return {
+        ...post,
+        tags: JSON.parse(post.tags || '[]') // ✅ 解析 tags 字串為陣列
+      }
+    })
+  }
   if (error) console.error(error)
 })
 
+
+// onMounted(async () => {
+//   const { data, error } = await supabase
+//     .from('posts')
+//     .select('*')
+//     .order('date', { ascending: false })
+
+//   if (data) posts.value = data
+//   if (error) console.error(error)
+// })
+
 useHead({
-  title: '安卓の部落格',
+  title: '九又四分之三月台-入口',
   meta: [{ name: 'description', content: '歡迎來到安卓的技術與生活部落格！' }]
 })
 </script>
 
 <template>
   <div class="wrapper">
-  <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
+  <NavMenu :onMenuToggle="(val) => (menuOpen = val)" @categorySelected="handleCategoryChange" />
+
 
 <section class="paper-header">
   <div class="paper-banner">
@@ -52,37 +86,50 @@ useHead({
     <section class="card-section">
     <main>
       <NuxtLink to="/post">文章</NuxtLink>
-      <NuxtLink to="/admin">新增文章</NuxtLink>
-      <!-- 最新文章 -->
-      <section class="latest-post" v-if="posts.length">
-        <NuxtLink :to="`/post/${posts[0].id}`" class="thumbnail">
-          <img :src="posts[0].image_url || '/default.jpg'" alt="封面圖片" />
-        </NuxtLink>
-        <div class="latest-content">
-          <p class="date">📌 最新 ｜ {{ posts[0].date }}</p>
-          <h2>
-            <NuxtLink :to="`/post/${posts[0].id}`">{{ posts[0].title }}</NuxtLink>
-          </h2>
-          <p class="desc">{{ posts[0].summary || posts[0].content.slice(0, 40) }}...</p>
-          <div class="author">
-            <div class="avatar"></div>
-            <span>{{ posts[0].author }}</span>
-          </div>
-        </div>
-      </section>
+      <NuxtLink to="/admin">新增文章</NuxtLink>\
 
-      <!-- 其他文章 -->
-      <section class="card-grid">
-        <NuxtLink
-          v-for="post in posts"
-          :key="post.id"
-          :to="`/post/${post.id}`"
-          class="card"
-        >
+      <!-- 最新文章（只顯示篩選後的第一篇） -->
+       <Transition name="fade">
+         <section class="latest-post" v-if="filteredPosts.length">
+           <NuxtLink :to="`/post/${filteredPosts[0].id}`" class="thumbnail">
+             <img :src="filteredPosts[0].image_url || '/default.jpg'" alt="封面圖片" />
+           </NuxtLink>
+           <div class="latest-content">
+              <p class="date">
+               🎩 {{ filteredPosts[0].tags?.[0] || '未分類' }} ｜ {{ filteredPosts[0].date }}
+             </p>
+             <h2>
+               <NuxtLink :to="`/post/${filteredPosts[0].id}`">
+                 {{ filteredPosts[0].title }}
+               </NuxtLink>
+             </h2>
+             <p class="desc">
+               {{ filteredPosts[0].summary || filteredPosts[0].content.slice(0, 40) }}...
+             </p>
+             <div class="author">
+               <div class="avatar"></div>
+               <span>{{ filteredPosts[0].author }}</span>
+             </div>
+           </div>
+         </section>
+       </Transition>
+
+
+     <!-- 其他文章 -->
+         <TransitionGroup name="fade" tag="section" class="card-grid">
+           <NuxtLink
+                      v-for="post in filteredPosts"
+             :key="post.id"
+             :to="`/post/${post.id}`"
+             class="card"
+           >
+
           <div class="thumbnail">
             <img :src="post.image_url || '/default.jpg'" alt="封面圖" />
           </div>
-          <p class="date">📌 類型 ｜ {{ post.date }}</p>
+          <p class="date">
+               ✨ {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }}
+          </p>
           <h3 class="card-title">{{ post.title }}</h3>
           <p class="desc">{{ post.summary || post.content.slice(0, 40) }}...</p>
           <div class="author">
@@ -90,7 +137,7 @@ useHead({
             <span>{{ post.author }}</span>
           </div>
         </NuxtLink>
-      </section>
+      </TransitionGroup>
 
       <div class="pagination">
         <button v-for="n in 4" :key="n">{{ n }}</button>
@@ -593,7 +640,7 @@ footer {
   opacity: 0.05; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
-    animation: noiseMove 20s linear infinite;
+    animation: noiseMove 11s linear infinite;
 }
 
 .paper-banner {
@@ -639,6 +686,16 @@ footer {
     background-position: 100px 100px;
   }
 }
+
+/* 淡入淡出動畫樣式 */
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.5s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
 
 
 </style>

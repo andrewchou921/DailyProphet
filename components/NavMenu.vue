@@ -15,6 +15,15 @@ const toggleMenu = () => {
 watch(showMenu, (val) => {
   props.onMenuToggle?.(val)
 })
+
+// 點完關掉選單
+const emit = defineEmits(['categorySelected'])
+
+const selectCategory = (category: string) => {
+  emit('categorySelected', category)
+  showMenu.value = false 
+}
+
 </script>
 
 <template>
@@ -29,8 +38,10 @@ watch(showMenu, (val) => {
     </button>
 
     <nav class="menu" :class="{ open: showMenu }">
-      <a href="#" @click="showMenu = false">學習筆記</a>
-      <a href="#" @click="showMenu = false">生活紀錄</a>
+     <!-- ✅ 用 selectCategory 發送事件 -->
+     <a href="#" @click.prevent="selectCategory('全部')">全部貼文</a>
+     <a href="#" @click.prevent="selectCategory('學習筆記')">學習筆記</a>
+     <a href="#" @click.prevent="selectCategory('生活紀錄')">生活紀錄</a>
       <a
         href="https://andrewchou921.github.io/work/"
         class="portfolio-btn"
@@ -121,6 +132,7 @@ watch(showMenu, (val) => {
   border-radius: 50%;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 
 
 /* 手機版選單 */

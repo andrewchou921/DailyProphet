@@ -23,6 +23,7 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+
 onMounted(async () => {
   const { data, error } = await supabase
     .from('posts')
@@ -36,6 +37,13 @@ onMounted(async () => {
     errorMsg.value = '文章載入失敗：' + error.message
     console.error(error)
   }
+
+  if (data) {
+  post.value = {
+    ...data,
+    tags: JSON.parse(data.tags || '[]')  // ✅ 加這行解析 tags
+  }
+}
 
   loading.value = false
 })
@@ -52,7 +60,9 @@ onMounted(async () => {
 
     <main v-else class="post">
       <h1 class="post-title">{{ post.title }}</h1>
-      <p class="post-meta">📌 類型 ｜ {{ post.date }} ｜ {{ post.author }}</p>
+      <p class="post-meta">
+        📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
+      </p>
       <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
 
       <!-- 使用 html 欄位渲染 -->
