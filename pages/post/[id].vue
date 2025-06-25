@@ -50,8 +50,15 @@ onMounted(async () => {
 </script>
 
 <template>
+
   
+
   <div class="wrapper">
+   <section class="post-header">
+      <div class="post-banner">
+        <img src="/posttitle.png" alt="安卓預言家日報標頭" class="paper-title-img" />
+      </div>
+   </section>
     <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
     <div v-if="loading">載入中...</div>
 
@@ -100,7 +107,8 @@ onMounted(async () => {
 .wrapper {
   position: relative;
   max-width: 1200px;
-  margin: 6rem auto 2rem;
+  margin: 3rem auto 2rem;
+  margin-top: 8%;
   padding: 0 1rem;
   font-family: 'Noto Sans TC', sans-serif;
   z-index: 0;
@@ -172,19 +180,40 @@ footer {
 /* 返回按鈕 */
 .back-btn {
   display: inline-block;
-  margin-bottom: 1.5rem;
-  margin-top: 1.5rem;
-  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
   color: #ffffff;
   background-color: rgb(196, 0, 0);
   text-decoration: none;
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 4px;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 .back-btn:hover {
   background-color: #3e1f0d;
   color: #fff;
+}
+
+.post-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* margin: 1rem auto 0; */
+  padding-top: 30px; 
+  max-width: 50%;
+  margin-top: 0rem;
+}
+
+@media (max-width: 600px) {
+  .post-header {
+    margin-top: 3rem;
+    margin-bottom: 0;
+    padding-top: 3rem;
+    max-width: 70%;
+    margin: 1rem auto 0; 
+    text-align: center;
+  }
 }
 
 

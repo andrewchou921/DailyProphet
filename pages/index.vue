@@ -259,6 +259,7 @@ body {
   position: relative;
   /* border: 3px solid #3e1f0d; */
   color: #3e1f0d;
+  justify-content: space-between; /* ⬅️ 關鍵：確保底部作者資訊對齊 */
 }
 
 .latest-post .thumbnail {
