@@ -111,7 +111,7 @@ useHead({
 
         <!-- ✅ 最新文章（只顯示篩選後的第一篇） -->
         <Transition name="fade">
-          <section class="latest-post" v-if="filteredPosts.length">
+          <section class="latest-post" v-if="filteredPosts.length&& currentPage === 1 && selectedCategory === '全部'">
             <NuxtLink :to="`/post/${filteredPosts[0].id}`" class="thumbnail">
               <img :src="filteredPosts[0].image_url || '/default.jpg'" alt="封面圖片" />
             </NuxtLink>
@@ -672,7 +672,7 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 4rem auto 3rem;
+  margin: 3rem auto 3rem;
   padding-top: 6rem;
   margin-bottom: 4rem;
   width: 100%;

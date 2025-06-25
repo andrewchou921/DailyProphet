@@ -163,9 +163,10 @@ onMounted(async () => {
 
 footer {
   text-align: center;
-  padding: 2rem 0;
+  padding: 1.5rem 0;
   font-size: 0.875rem;
-  color: #888;
+  color: #ffffff;
+  font-family: 'Noto Sans TC', sans-serif;
 }
 
 /* 返回按鈕 */
