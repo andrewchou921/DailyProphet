@@ -99,7 +99,7 @@ useHead({
 
     <section class="paper-header">
       <div class="paper-banner">
-        <img src="/title.svg" alt="安卓預言家日報標頭" class="paper-title-img" />
+        <img src="/title.png" alt="安卓預言家日報標頭" class="paper-title-img" />
       </div>
     </section>
 
@@ -193,6 +193,11 @@ useHead({
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.card-title{
+ margin-bottom: 0%;
+ margin-top: 0% !important;
 }
 
 .card-section {
@@ -323,6 +328,13 @@ body {
   color: rgb(62, 31, 13);
   margin-bottom: 1rem;
 }
+/* 手機版最新貼文不要顯示 */
+@media (max-width: 600px) {
+  .latest-post {
+    display: none;
+  }
+}
+
 
 /* 卡片區 */
 .card-grid {
@@ -343,6 +355,7 @@ body {
   gap: 1rem;
   transition: transform 0.2s ease;
   z-index: 1;
+  justify-content: space-between; /* ⬅️ 關鍵：確保底部作者資訊對齊 */
 }
 
 .card:hover {
@@ -431,14 +444,14 @@ body {
 .card .desc {
   font-size: 0.9rem;
   color: #3e1f0d;
-  margin: 0.5rem 0;
+  margin: 0rem 0;
 }
 
 .author {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: 0rem;
 }
 
 .avatar-wrapper {
@@ -733,7 +746,7 @@ footer {
   background-image: url('/rpbg.png'); /* 雜訊圖片路徑 */
   background-size: cover;
   background-size: 1400px auto; /* ✅ 雜訊圖片縮小 */
-  opacity: 0.05; /* 雜訊強度 */
+  opacity: 0.04; /* 雜訊強度 */
   pointer-events: none;
   z-index: 0;
     animation: noiseMove 11s linear infinite;
@@ -791,6 +804,7 @@ footer {
   opacity: 0;
   transform: scale(0.7);
 }
+
 
 
 

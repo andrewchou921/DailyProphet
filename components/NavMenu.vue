@@ -130,7 +130,14 @@ const handleLogoClick = () => {
   border-radius: 999px;
   border: none;
   cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
+
+.portfolio-btn:hover {
+  background-color: #8102c5;
+  color: #fff;
+}
+
 
 /* 漢堡圖示按鈕（預設隱藏） */
 .menu-toggle {
