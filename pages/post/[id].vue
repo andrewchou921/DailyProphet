@@ -44,14 +44,19 @@ onMounted(async () => {
   loading.value = false
 })
 
-// 監聽 post 變動，設定 SEO / 社群分享 meta
+// 社群分享
 watch(post, () => {
   if (!post.value) return
 
   useHead({
-    title: post.value.title || '九又四分之三月台',
+    title: `${post.value.title}｜九又四分之三月台`,
     meta: [
       { name: 'description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
+      { name: 'author', content: post.value.author || 'Andrew Chou' },
+      { name: 'keywords', content: post.value.tags?.join(', ') || '攝影, 相機, 部落格' },
+
+      // Open Graph 設定（Facebook, LinkedIn）
+      { property: 'og:type', content: 'article' },
       { property: 'og:title', content: post.value.title },
       { property: 'og:description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
       {
@@ -62,10 +67,22 @@ watch(post, () => {
         property: 'og:url',
         content: `https://daily-prophet-pi.vercel.app/post/${postId}`
       },
-      { name: 'twitter:card', content: 'summary_large_image' }
+
+      // Twitter Card 設定
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: post.value.title },
+      { name: 'twitter:description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
+      {
+        name: 'twitter:image',
+        content: post.value.image_url || 'https://daily-prophet-pi.vercel.app/og-default.png'
+      }
+    ],
+    link: [
+      { rel: 'canonical', href: `https://daily-prophet-pi.vercel.app/post/${postId}` }
     ]
   })
 })
+
 </script>
 
 
@@ -151,6 +168,29 @@ watch(post, () => {
   font-family: 'Noto Sans TC', sans-serif !important;
 }
 
+.toastui-editor-contents table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+  margin: 1rem 0;
+}
+
+.toastui-editor-contents th {
+  background-color: #3e3e3e;
+  color: #fff;
+  font-weight: bold;
+  padding: 0.8rem;
+  text-align: left;
+}
+
+.toastui-editor-contents td {
+  background-color: #fdfcf9;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  color: #333;
+  vertical-align: top;
+}
+
 
 .post {
   font-family: 'Noto Sans TC', sans-serif;
@@ -173,7 +213,7 @@ watch(post, () => {
   inset: 0;
   background-image: url('/paperboard-texture.jpg'); 
   background-size: cover;
-  opacity: 0.65; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
+  opacity: 0.6; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
   background-repeat: no-repeat;
   background-blend-mode: multiply;
   z-index: -1;
