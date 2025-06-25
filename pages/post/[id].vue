@@ -1,33 +1,29 @@
 <script setup>
-import { ref, onMounted, VueElement } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useHead } from '#app'
 import { supabase } from '~/utils/supabase'
 import BackToTop from '~/components/BackToTop.vue'
 import NavMenu from '~/components/NavMenu.vue'
 
-
-// 套用 Toast UI Viewer 樣式
+// Toast UI 樣式
 import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
-// 頂部按鈕消失
+// 狀態
 const menuOpen = ref(false)
-
 const route = useRoute()
 const postId = route.params.id
-
 const post = ref(null)
 const loading = ref(true)
 const errorMsg = ref('')
-
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
 const currentUrl = ref('')
 
-// 分享貼文連結
-currentUrl.value = window.location.href
+// 拿當前網址（分享用）
+if (process.client) {
+  currentUrl.value = window.location.href
+}
 
+// 拉資料
 onMounted(async () => {
   const { data, error } = await supabase
     .from('posts')
@@ -36,22 +32,42 @@ onMounted(async () => {
     .single()
 
   if (data) {
-    post.value = data
+    post.value = {
+      ...data,
+      tags: JSON.parse(data.tags || '[]')
+    }
   } else if (error) {
     errorMsg.value = '文章載入失敗：' + error.message
     console.error(error)
   }
 
-  if (data) {
-  post.value = {
-    ...data,
-    tags: JSON.parse(data.tags || '[]')  // ✅ 加這行解析 tags
-  }
-}
-
   loading.value = false
 })
+
+// 監聽 post 變動，設定 SEO / 社群分享 meta
+watch(post, () => {
+  if (!post.value) return
+
+  useHead({
+    title: post.value.title || '九又四分之三月台',
+    meta: [
+      { name: 'description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
+      { property: 'og:title', content: post.value.title },
+      { property: 'og:description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
+      {
+        property: 'og:image',
+        content: post.value.image_url || 'https://daily-prophet-pi.vercel.app/og-default.png'
+      },
+      {
+        property: 'og:url',
+        content: `https://daily-prophet-pi.vercel.app/post/${postId}`
+      },
+      { name: 'twitter:card', content: 'summary_large_image' }
+    ]
+  })
+})
 </script>
+
 
 <template>
 
@@ -237,7 +253,7 @@ footer {
   align-items: center;
   /* margin: 1rem auto 0; */
   padding-top: 30px; 
-  max-width: 50%;
+  max-width: 18%;
   margin-top: 0rem;
 }
 
@@ -246,7 +262,7 @@ footer {
     margin-top: 6rem;
     margin-bottom: 0;
     padding-top: 3rem;
-    max-width: 70%;
+    max-width: 40%;
     /* margin: 1rem auto 0;  */
     text-align: center;
   }

@@ -67,6 +67,41 @@ const handleImageChange = (e: Event) => {
   }
 }
 
+const handleInsertImage = async (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (!target.files?.length) return
+
+  const files = Array.from(target.files)
+  let markdownToInsert = ''
+
+  for (const [index, file] of files.entries()) {
+    if (file.size > 2 * 1024 * 1024) {
+      errorMessage.value = `❌ 圖片 ${file.name} 太大（限 2MB）`
+      continue
+    }
+
+    const fileName = `${Date.now()}_${index}_${file.name.slice(0, 30)}`
+    const { error: uploadError } = await supabase.storage
+      .from('post-images')
+      .upload(fileName, file)
+
+    if (uploadError) {
+      errorMessage.value = `❌ 上傳 ${file.name} 失敗：${uploadError.message}`
+      continue
+    }
+
+    const { data } = supabase.storage.from('post-images').getPublicUrl(fileName)
+    const imageUrl = data.publicUrl
+
+    markdownToInsert += `\n\n![圖片](${imageUrl})\n\n`
+  }
+
+  if (markdownToInsert) {
+    content.value += markdownToInsert
+    editorInstance.setMarkdown(content.value)
+  }
+}
+
 const submitPost = async () => {
   if (loading.value) return
   loading.value = true
@@ -155,6 +190,11 @@ const submitPost = async () => {
     <div class="form-field">
       <label>內容（支援 Markdown） *</label>
       <div id="editor" />
+    </div>
+
+    <div class="form-field">
+      <label>插入圖片到內容（可多選）</label>
+      <input type="file" accept="image/*" multiple @change="handleInsertImage" />
     </div>
 
     <div class="form-field">
