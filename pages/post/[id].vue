@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, VueElement } from 'vue'
 import { useRoute } from 'vue-router'
 import { supabase } from '~/utils/supabase'
 import BackToTop from '~/components/BackToTop.vue'
@@ -23,6 +23,10 @@ const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+const currentUrl = ref('')
+
+// 分享貼文連結
+currentUrl.value = window.location.href
 
 onMounted(async () => {
   const { data, error } = await supabase
@@ -51,8 +55,6 @@ onMounted(async () => {
 
 <template>
 
-  
-
   <div class="wrapper">
    <section class="post-header">
       <div class="post-banner">
@@ -66,28 +68,62 @@ onMounted(async () => {
       <p style="color: red">{{ errorMsg }}</p>
     </div>
 
-    <main v-else class="post">
-      <NuxtLink to="/" class="back-btn">← 返回首頁</NuxtLink>
-      <h1 class="post-title">{{ post.title }}</h1>
-      <p class="post-meta">
-        📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
-      </p>
-      <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
+   <main v-else class="post">
+  <NuxtLink to="/" class="back-btn">← 返回首頁</NuxtLink>
+  <h1 class="post-title">{{ post.title }}</h1>
+  <p class="post-meta">
+    📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
+  </p>
+  <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
 
-      <!-- 使用 html 欄位渲染 -->
-      <article class="post-content toastui-editor-contents" v-html="post.html" />
+  <article class="post-content toastui-editor-contents" v-html="post.html" />
 
-      <div class="tag-area" v-if="post.tags">
-        <strong>標籤：</strong>
-        <span
-          class="tag"
-          v-for="tag in Array.isArray(post.tags) ? post.tags : post.tags.split(',')"
-          :key="tag"
-        >
-          {{ tag }}
-        </span>
-      </div>
-    </main>
+  <div class="tag-area" v-if="post.tags">
+    <strong>標籤：</strong>
+    <span
+      class="tag"
+      v-for="tag in Array.isArray(post.tags) ? post.tags : post.tags.split(',')"
+      :key="tag"
+    >
+      {{ tag }}
+    </span>
+  </div>
+
+<!-- ✅ 社群 icon 分享按鈕 -->
+<div class="social-share">
+  <strong>分享：</strong>
+  <a
+    :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`"
+    target="_blank"
+    rel="noopener"
+    class="share-icon fb"
+    aria-label="分享至 Facebook"
+  >
+    <i class="fab fa-facebook-f"></i>
+  </a>
+  <a
+    :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`"
+    target="_blank"
+    rel="noopener"
+    class="share-icon line"
+    aria-label="分享至 LINE"
+  >
+    <i class="fab fa-line"></i>
+  </a>
+  <a
+    :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title)}`"
+    target="_blank"
+    rel="noopener"
+    class="share-icon twitter"
+    aria-label="分享至 Twitter"
+  >
+    <i class="fab fa-twitter"></i>
+  </a>
+</div>
+
+   </main>
+
+    
   </div>
    <BackToTop :hidden="menuOpen" />
   <footer>Copyright © Andrew Portfolio Website 2025</footer>
@@ -121,7 +157,7 @@ onMounted(async () => {
   inset: 0;
   background-image: url('/paperboard-texture.jpg'); 
   background-size: cover;
-  opacity: 0.6; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
+  opacity: 0.65; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
   background-repeat: no-repeat;
   background-blend-mode: multiply;
   z-index: -1;
@@ -207,13 +243,57 @@ footer {
 
 @media (max-width: 600px) {
   .post-header {
-    margin-top: 3rem;
+    margin-top: 6rem;
     margin-bottom: 0;
     padding-top: 3rem;
     max-width: 70%;
-    margin: 1rem auto 0; 
+    /* margin: 1rem auto 0;  */
     text-align: center;
   }
+}
+
+/* 社群分享 */
+.social-share {
+  margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.social-share strong {
+  margin-right: 0.5rem;
+  color: #3e1f0d;
+}
+
+.share-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  text-decoration: none;
+  font-size: 16px;
+  transition: transform 0.2s ease, opacity 0.3s ease;
+}
+
+.share-icon:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}
+
+.share-icon.fb {
+  background-color: #3b5998;
+}
+
+.share-icon.line {
+  background-color: #00c300;
+}
+
+.share-icon.twitter {
+  background-color: #1da1f2;
 }
 
 
