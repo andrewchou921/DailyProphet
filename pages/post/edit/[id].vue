@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useNuxtApp } from '#app'
 import { supabase } from '~/utils/supabase'
+
+const router = useRouter()
+const route = useRoute()
+const postId = route.params.id as string
 
 const title = ref('')
 const summary = ref('')
@@ -12,14 +16,14 @@ const date = ref('')
 const author = ref('')
 const tags = ref('')
 const imageFile = ref<File | null>(null)
+const imageUrl = ref('')
 const loading = ref(false)
-
-let editorInstance: any
-const { $toastEditor } = useNuxtApp()
-const router = useRouter()
 
 const successMessage = ref('')
 const errorMessage = ref('')
+
+let editorInstance: any
+const { $toastEditor } = useNuxtApp()
 
 function stripMarkdown(text: string): string {
   return text
@@ -34,14 +38,32 @@ onMounted(async () => {
   const {
     data: { session }
   } = await supabase.auth.getSession()
-
   if (!session) {
     router.push('/login')
     return
   }
 
-  await nextTick() // ✅ 等待 DOM 渲染出 #editor
+  const { data, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('id', postId)
+    .single()
 
+  if (error || !data) {
+    errorMessage.value = '❌ 找不到文章或載入失敗'
+    return
+  }
+
+  title.value = data.title
+  summary.value = data.summary || ''
+  content.value = data.content
+  htmlContent.value = data.html
+  date.value = data.date
+  author.value = data.author
+  tags.value = (data.tags || []).join(',')
+  imageUrl.value = data.image_url || ''
+
+  await nextTick()
   if ($toastEditor) {
     editorInstance = new $toastEditor({
       el: document.querySelector('#editor')!,
@@ -55,18 +77,30 @@ onMounted(async () => {
         }
       }
     })
-  } else {
-    console.error('❌ toastEditor 尚未載入')
+    editorInstance.setMarkdown(data.content)
   }
-
-  date.value = new Date().toISOString().split('T')[0]
 })
 
-const handleImageChange = (e: Event) => {
-  const target = e.target as HTMLInputElement
-  if (target.files?.length) {
-    imageFile.value = target.files[0]
+const handleImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  imageFile.value = file
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${Date.now()}.${fileExt}`
+  const filePath = `post-images/${fileName}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('post-images')
+    .upload(filePath, file)
+
+  if (uploadError) {
+    errorMessage.value = '❌ 圖片上傳失敗'
+    return
   }
+
+  imageUrl.value = supabase.storage.from('post-images').getPublicUrl(filePath).data.publicUrl
 }
 
 const handleInsertImage = async (e: Event) => {
@@ -103,80 +137,38 @@ const handleInsertImage = async (e: Event) => {
   }
 }
 
-const submitPost = async () => {
-  if (loading.value) return
+const updatePost = async () => {
   loading.value = true
+  successMessage.value = ''
+  errorMessage.value = ''
 
-  if (!title.value || !content.value || !date.value || !author.value) {
-    errorMessage.value = '❌ 請填寫所有必填欄位'
-    successMessage.value = ''
-    loading.value = false
-    return
-  }
-
-  if (imageFile.value && imageFile.value.size > 2 * 1024 * 1024) {
-    errorMessage.value = '❌ 圖片大小不能超過 2MB'
-    loading.value = false
-    return
-  }
-
-  let imageUrl = ''
-  if (imageFile.value) {
-    const fileName = `${Date.now()}_${imageFile.value.name}`
-    const { error: uploadError } = await supabase.storage
-      .from('post-images')
-      .upload(fileName, imageFile.value)
-
-    if (uploadError) {
-      errorMessage.value = '❌ 圖片上傳失敗：' + uploadError.message
-      loading.value = false
-      return
-    }
-
-    const { data } = supabase.storage.from('post-images').getPublicUrl(fileName)
-    imageUrl = data.publicUrl
-  }
-
-  const finalSummary = summary.value.trim() || stripMarkdown(content.value).slice(0, 100)
-
-  const { error } = await supabase.from('posts').insert([{
-    title: title.value,
-    summary: finalSummary,
-    content: content.value,
-    html: htmlContent.value,
-    date: date.value,
-    author: author.value,
-    tags: tags.value.split(',').map(tag => tag.trim()),
-    image_url: imageUrl
-  }])
-
-  if (error) {
-    errorMessage.value = error.message
-    successMessage.value = ''
-  } else {
-    successMessage.value = '✅ 文章發布成功！'
-    errorMessage.value = ''
-    title.value = ''
-    summary.value = ''
-    content.value = ''
-    htmlContent.value = ''
-    date.value = new Date().toISOString().split('T')[0]
-    author.value = ''
-    tags.value = ''
-    imageFile.value = null
-    editorInstance.setMarkdown('')
-    setTimeout(() => {
-      router.push('/posts')
-    }, 1500)
-  }
+  const { error } = await supabase
+    .from('posts')
+    .update({
+      title: title.value,
+      summary: summary.value,
+      content: content.value,
+      html: htmlContent.value,
+      date: date.value,
+      author: author.value,
+      tags: tags.value.split(',').map(tag => tag.trim()),
+      image_url: imageUrl.value || null
+    })
+    .eq('id', postId)
 
   loading.value = false
+
+  if (error) {
+    errorMessage.value = '❌ 更新失敗：' + error.message
+  } else {
+    successMessage.value = '✅ 文章已成功更新！'
+  }
 }
 </script>
 
 <template>
   <div class="form-container">
-    <h1>新增文章</h1>
+    <h1>編輯文章</h1>
 
     <div class="form-field">
       <label>標題 *</label>
@@ -184,18 +176,24 @@ const submitPost = async () => {
     </div>
 
     <div class="form-field">
-      <label>描述 / 摘要（可選填）</label>
-      <textarea v-model="summary" rows="3" placeholder="請輸入文章描述..."></textarea>
+      <label>描述 / 摘要</label>
+      <textarea v-model="summary" rows="3" />
     </div>
 
     <div class="form-field">
-      <label>內容（支援 Markdown） *</label>
+      <label>內容 *</label>
       <div id="editor" />
     </div>
 
     <div class="form-field">
       <label>插入圖片到內容（可多選）</label>
       <input type="file" accept="image/*" multiple @change="handleInsertImage" />
+    </div>
+
+    <div class="form-field">
+      <label>封面圖片</label>
+      <input type="file" accept="image/*" @change="handleImageChange" />
+      <img v-if="imageUrl" :src="imageUrl" style="margin-top:1rem; max-width:200px" />
     </div>
 
     <div class="form-field">
@@ -213,13 +211,8 @@ const submitPost = async () => {
       <input v-model="tags" type="text" />
     </div>
 
-    <div class="form-field">
-      <label>上傳封面圖片</label>
-      <input type="file" accept="image/*" @change="handleImageChange" />
-    </div>
-
-    <button :disabled="loading" @click="submitPost">
-      {{ loading ? '發佈中...' : '🚀 發佈文章' }}
+    <button :disabled="loading" @click="updatePost">
+      {{ loading ? '更新中...' : '💾 更新文章' }}
     </button>
 
     <p v-if="successMessage" style="color: green; margin-top: 1rem">{{ successMessage }}</p>

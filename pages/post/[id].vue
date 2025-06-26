@@ -1,6 +1,6 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useHead } from '#app'
 import { supabase } from '~/utils/supabase'
 import BackToTop from '~/components/BackToTop.vue'
@@ -9,21 +9,43 @@ import NavMenu from '~/components/NavMenu.vue'
 // Toast UI 樣式
 import '@toast-ui/editor/dist/toastui-editor-viewer.css'
 
-// 狀態
-const menuOpen = ref(false)
+
+// 路由設定
 const route = useRoute()
 const postId = route.params.id
-const post = ref(null)
+const router = useRouter()
+
+// ✅ 點擊圖片 10 次跳轉編輯頁面
+let clickCount = 0
+let clickTimer: any
+
+const handleSecretClick = () => {
+  clickCount++
+
+  clearTimeout(clickTimer)
+  clickTimer = setTimeout(() => {
+    clickCount = 0
+  }, 3000)
+
+  if (clickCount >= 10 && post.value?.id) {
+    router.push(`/post/edit/${post.value.id}`) // ✅ 正確路由格式
+  }
+}
+
+
+// 狀態
+const menuOpen = ref(false)
+const post = ref<any>(null)
 const loading = ref(true)
 const errorMsg = ref('')
 const currentUrl = ref('')
 
-// 拿當前網址（分享用）
+// 拿網址（for 分享）
 if (process.client) {
   currentUrl.value = window.location.href
 }
 
-// 拉資料
+// 文章資料
 onMounted(async () => {
   const { data, error } = await supabase
     .from('posts')
@@ -36,6 +58,7 @@ onMounted(async () => {
       ...data,
       tags: JSON.parse(data.tags || '[]')
     }
+    console.log('post:', post.value)
   } else if (error) {
     errorMsg.value = '文章載入失敗：' + error.message
     console.error(error)
@@ -44,7 +67,7 @@ onMounted(async () => {
   loading.value = false
 })
 
-// 社群分享
+// SEO
 watch(post, () => {
   if (!post.value) return
 
@@ -55,7 +78,6 @@ watch(post, () => {
       { name: 'author', content: post.value.author || 'Andrew Chou' },
       { name: 'keywords', content: post.value.tags?.join(', ') || '攝影, 相機, 部落格' },
 
-      // Open Graph 設定（Facebook, LinkedIn）
       { property: 'og:type', content: 'article' },
       { property: 'og:title', content: post.value.title },
       { property: 'og:description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
@@ -68,7 +90,6 @@ watch(post, () => {
         content: `https://daily-prophet-pi.vercel.app/post/${postId}`
       },
 
-      // Twitter Card 設定
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: post.value.title },
       { name: 'twitter:description', content: post.value.desc || '歡迎閱讀我的部落格文章！' },
@@ -82,18 +103,21 @@ watch(post, () => {
     ]
   })
 })
-
 </script>
 
-
 <template>
-
   <div class="wrapper">
-   <section class="post-header">
+    <section class="post-header">
       <div class="post-banner">
-        <img src="/posttitle.png" alt="安卓預言家日報標頭" class="paper-title-img" />
+        <img src="/posttitle.png" alt="安卓預言家日報標頭" class="paper-title-img" @click="handleSecretClick" />
       </div>
-   </section>
+    </section>
+ <!-- <NuxtLink v-if="post" :to="`/post/edit/${post.id}`" class="edit-btn">
+    ✏️ 編輯文章
+  </NuxtLink> -->
+
+
+
     <NavMenu :onMenuToggle="(val) => (menuOpen = val)" />
     <div v-if="loading">載入中...</div>
 
@@ -101,66 +125,65 @@ watch(post, () => {
       <p style="color: red">{{ errorMsg }}</p>
     </div>
 
-   <main v-else class="post">
-  <NuxtLink to="/" class="back-btn">← 返回首頁</NuxtLink>
-  <h1 class="post-title">{{ post.title }}</h1>
-  <p class="post-meta">
-    📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
-  </p>
-  <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
+    <main v-else class="post">
+      <NuxtLink to="/" class="back-btn">← 返回首頁</NuxtLink>
+      <h1 class="post-title">{{ post.title }}</h1>
+      <p class="post-meta">
+        📌 {{ post.tags?.[0] || '未分類' }} ｜ {{ post.date }} ｜ {{ post.author }}
+      </p>
+      <img v-if="post.image_url" :src="post.image_url" alt="文章圖片" class="post-image" />
 
-  <article class="post-content toastui-editor-contents" v-html="post.html" />
+      <article class="post-content toastui-editor-contents" v-html="post.html" />
 
-  <div class="tag-area" v-if="post.tags">
-    <strong>標籤：</strong>
-    <span
-      class="tag"
-      v-for="tag in Array.isArray(post.tags) ? post.tags : post.tags.split(',')"
-      :key="tag"
-    >
-      {{ tag }}
-    </span>
+      <div class="tag-area" v-if="post.tags">
+        <strong>標籤：</strong>
+        <span
+          class="tag"
+          v-for="tag in Array.isArray(post.tags) ? post.tags : post.tags.split(',')"
+          :key="tag"
+        >
+          {{ tag }}
+        </span>
+      </div>
+
+      <!-- 社群分享 -->
+      <div class="social-share">
+        <strong>分享：</strong>
+        <a
+          :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`"
+          target="_blank"
+          rel="noopener"
+          class="share-icon fb"
+          aria-label="Facebook"
+        >
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <a
+          :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`"
+          target="_blank"
+          rel="noopener"
+          class="share-icon line"
+          aria-label="LINE"
+        >
+          <i class="fab fa-line"></i>
+        </a>
+        <a
+          :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title)}`"
+          target="_blank"
+          rel="noopener"
+          class="share-icon twitter"
+          aria-label="Twitter"
+        >
+          <i class="fab fa-twitter"></i>
+        </a>
+      </div>
+    </main>
   </div>
 
-<!-- ✅ 社群 icon 分享按鈕 -->
-<div class="social-share">
-  <strong>分享：</strong>
-  <a
-    :href="`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`"
-    target="_blank"
-    rel="noopener"
-    class="share-icon fb"
-    aria-label="分享至 Facebook"
-  >
-    <i class="fab fa-facebook-f"></i>
-  </a>
-  <a
-    :href="`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(currentUrl)}`"
-    target="_blank"
-    rel="noopener"
-    class="share-icon line"
-    aria-label="分享至 LINE"
-  >
-    <i class="fab fa-line"></i>
-  </a>
-  <a
-    :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title)}`"
-    target="_blank"
-    rel="noopener"
-    class="share-icon twitter"
-    aria-label="分享至 Twitter"
-  >
-    <i class="fab fa-twitter"></i>
-  </a>
-</div>
-
-   </main>
-
-    
-  </div>
-   <BackToTop :hidden="menuOpen" />
+  <BackToTop :hidden="menuOpen" />
   <footer>Copyright © Andrew Portfolio Website 2025</footer>
 </template>
+
 
 <style scoped>
 
