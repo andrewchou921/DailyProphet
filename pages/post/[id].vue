@@ -233,15 +233,17 @@ watch(post, () => {
 .wrapper::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background-image: url('/paperboard-texture.jpg'); 
-  background-size: cover;
-  opacity: 0.6; /* ✅ 透明度：0（完全透明）～1（完全不透明） */
-  background-repeat: no-repeat;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; /* ✅ 關鍵：偽元素會撐滿 wrapper 的內容高度 */
+  background-image: url('/paperboard-texture.jpg');
+  background-size: auto;
+  background-repeat: repeat;
+  opacity: 0.4;
   background-blend-mode: multiply;
   z-index: -1;
 }
-
 .post-image {
   max-width: 100%;
   border-radius: 8px;
