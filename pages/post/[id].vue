@@ -40,6 +40,20 @@ const loading = ref(true)
 const errorMsg = ref('')
 const currentUrl = ref('')
 
+
+// 分享到threads
+const copyToClipboard = async () => {
+  try {
+    const url = window.location.href // ✅ 直接在 function 裡取得，不宣告全域變數
+    await navigator.clipboard.writeText(url)
+    alert('📋 已複製連結，請前往 Threads 貼上分享！')
+    window.open('https://www.threads.net/', '_blank')
+  } catch (err) {
+    alert('❌ 複製失敗，請手動複製網址')
+  }
+}
+
+
 // 拿網址（for 分享）
 if (process.client) {
   currentUrl.value = window.location.href
@@ -167,15 +181,18 @@ watch(post, () => {
         >
           <i class="fab fa-line"></i>
         </a>
-        <a
-          :href="`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title)}`"
-          target="_blank"
-          rel="noopener"
-          class="share-icon twitter"
-          aria-label="Twitter"
-        >
-          <i class="fab fa-twitter"></i>
-        </a>
+        <!-- Threads (手動複製 + 導向) -->
+       <a
+         href="https://www.threads.net/"
+         target="_blank"
+         rel="noopener"
+         class="share-icon threads"
+         aria-label="Threads"
+         @click.prevent="copyToClipboard"
+       >
+         <i class="fab fa-threads"></i>
+       </a>
+
       </div>
     </main>
   </div>
@@ -189,6 +206,14 @@ watch(post, () => {
 
 .toastui-editor-contents {
   font-family: 'Noto Sans TC', sans-serif !important;
+}
+
+.toastui-editor-contents h2 {
+    font-size: 22px;
+    line-height: 23px;
+    border-bottom: 0px solid #ffffff !important;
+    margin: 20px 0 13px 0;
+    padding-bottom: 7px;
 }
 
 .toastui-editor-contents table {
@@ -373,8 +398,8 @@ footer {
   background-color: #00c300;
 }
 
-.share-icon.twitter {
-  background-color: #1da1f2;
+.share-icon.threads{
+  background-color: #000000;
 }
 
 
